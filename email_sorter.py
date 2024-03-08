@@ -6,14 +6,14 @@ import random
 import concurrent.futures
 import datetime
 
-ascii_image = '''       
+advert = '''       
                     MAILION APPLICATION
                  ---------contact--------
                    t.me/mailon_official
                  ------EMAIL SORTER------
                       PYTHON PROJECT
               '''
-print(ascii_image)
+print(advert)
 
 number = []
 for _ in range(5):
@@ -313,18 +313,18 @@ if __name__ == '__main__':
                 time.sleep(1000)
 
         else:
-            ascii_image = '''       
+            advert = '''       
                      ------INVALID INPUT------
                            RUN APP AGAIN
                           '''
-            print(ascii_image)
+            print(advert)
             time.sleep(1000)
 
     else:
-        ascii_image = '''       
+        advert = '''       
                      ------INVALID INPUT------
                            RUN APP AGAIN
                       '''
-        print(ascii_image)
+        print(advert)
         time.sleep(1000)
 
