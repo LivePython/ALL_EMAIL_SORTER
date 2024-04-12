@@ -13,7 +13,6 @@ ascii_image = '''
                  ---------contact--------
                    t.me/mailon_official
                  ------EMAIL SORTER------
-                    MR. MORGY ELENIYAN
               '''
 print(ascii_image)
 
