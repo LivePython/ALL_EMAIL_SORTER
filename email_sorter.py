@@ -1,3 +1,5 @@
+import subprocess
+from functools import cache
 import dns.resolver
 import requests
 import re
@@ -6,20 +8,16 @@ import random
 import concurrent.futures
 import datetime
 
-advert = '''       
+ascii_image = '''       
                     MAILION APPLICATION
                  ---------contact--------
                    t.me/mailon_official
                  ------EMAIL SORTER------
-                      PYTHON PROJECT
+                    MR. MORGY ELENIYAN
               '''
-print(advert)
+print(ascii_image)
 
-number = []
-for _ in range(5):
-    da = random.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 0])
-    number.append(str(da))
-number = ''.join(number)
+number = ''.join([str(random.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 0])) for _ in range(3)])
 
 
 current_datetime = datetime.datetime.now()
@@ -53,6 +51,7 @@ host_name = ['Microsoft_free', 'office365', 'gmail', 'aol', 'yahoo', 'godaddy',
              'turbo-smtp', 'ziggo.nl', 'tigertech', 'others(mx)', 'others(no_mx)']
 
 
+@cache
 def get_disposable_domains():
     url = 'https://raw.githubusercontent.com/ivolo/disposable-email-domains/master/index.json'
     response = requests.get(url)
@@ -62,6 +61,7 @@ def get_disposable_domains():
         return []
 
 
+@cache
 def get_mx_records(email_address):
     domain = email_address.split('@')[1]
 
@@ -72,12 +72,13 @@ def get_mx_records(email_address):
         return []
 
 
+@cache
 def check_roundcube(email_text):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if re.search(regex, email_text):
         disposable_domains = get_disposable_domains()
         domain_name = email_text.split('@')[1]
-        roundcube_hosts = [f'webmail.{domain_name}', f'roundcube.{domain_name}', f'mail.{domain_name}/webmail',
+        roundcube_hosts = [f'webmail.{domain_name}', f'roundcube.{domain_name}', f'mail.{domain_name}/webmail', f"mail.{domain_name}.",
                            f'email.{domain_name}/roundcube', f'webmail2.{domain_name}', f'mail2.{domain_name}/roundcube',
                            f'webmail3.{domain_name}', f'roundcube2.{domain_name}', f'mail3.{domain_name}/roundcube',
                            f'rc.{domain_name}', f'webmail4.{domain_name}', f'roundcube3.{domain_name}',
@@ -87,28 +88,38 @@ def check_roundcube(email_text):
                            f'roundcube6.{domain_name}', f'mail7.{domain_name}/roundcube', f'webmail8.{domain_name}',
                            f'roundcube7.{domain_name}', f'mail8.{domain_name}/roundcube', f'webmail9.{domain_name}',
                            f'roundcube8.{domain_name}', f'mail9.{domain_name}/roundcube', f'rc3.{domain_name}',
-                           f'webmail10.{domain_name}', f'roundcube9.{domain_name}', f'mail10.{domain_name}/roundcube']
+                           f'webmail10.{domain_name}', f'roundcube9.{domain_name}', f'mail10.{domain_name}/roundcube',
+                           'mx1.cpmx.co.za.', f"{domain_name}.", 'fallbackmx.spamexperts.eu.', 'lastmx.spamexperts.net.',
+                           'mx.spamexperts.com.', 'mx4.mtaroutes.com.', 'mx2.mtaroutes.com.', 'mx3.mtaroutes.com.',
+                           'mx1.mtaroutes.com.', 'mx2.email-cluster.com.', 'failover1.email-cluster.com.',
+                           'mx1.email-cluster.com.', 'mx2.mtaroutes.com.', 'mx4.mtaroutes.com.', 'mx1.mtaroutes.com.',
+                           'mx3.mtaroutes.com.', 'email.tadmur.com.', 'lastmx.spamexperts.net.', 'fallbackmx.spamexperts.eu.',
+                           'mx.spamexperts.com.', 'mx3-hosting.jellyfish.systems.', 'mx1-hosting.jellyfish.systems.',
+                           'mx2-hosting.jellyfish.systems.', 'mx2.krystal.uk.', 'mx1.krystal.uk.', 'mx.stackmail.com.',
+                           'mx.stackmail.com.', 'mx-1.mailsafe.email.', 'mx-2.mailsafe.email.', 'mx01.mailcluster.com.au.',
+                           'mx02.mailcluster.com.au.', 'mx1.mailsentinel.net.', 'mx2.mailsentinel.net.']
 
         if domain_name not in disposable_domains:
+            mx_records = get_mx_records(email_text)
+            print(mx_records)
             for host in roundcube_hosts:
-                mx_records = get_mx_records(email_text)
                 for item in mx_records:
-
+                    print(f"Sorting {email_text}")
                     if host in item:
-                        print(f"{email_text} is a {host}")
+                        print(f"{email_text} is RoundCube")
                         try:
                             with open(f'Roundcube-{number}.txt', "a") as file:
                                 file.write(f'{email_text}\n')
                         except FileNotFoundError:
                             with open(f'Roundcube-{number}.txt', "w") as file:
                                 file.write(f'{email_text}\n')
-
                         break
                     else:
                         with open(f'others-{number}.txt', "w") as file:
                             file.write(f'{email_text}\n')
 
 
+@cache
 def check_OWA(email_text):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if re.search(regex, email_text):
@@ -126,33 +137,33 @@ def check_OWA(email_text):
             for host in OWA_hosts:
                 mx_records = get_mx_records(email_text)
                 for item in mx_records:
-
+                    print(f"Sorting {email_text}")
                     if host in item:
-                        print(f"{email_text} is a {host}")
+                        print(f"{email_text} is OWA")
                         try:
                             with open(f'OWA-{number}.txt', "a") as file:
                                 file.write(f'{email_text}\n')
                         except FileNotFoundError:
                             with open(f'OWA-{number}.txt', "w") as file:
                                 file.write(f'{email_text}\n')
-
                         break
                     else:
                         with open(f'others-{number}.txt', "w") as file:
                             file.write(f'{email_text}\n')
 
-
+@cache
 def sort_other_emails(email_text):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if re.search(regex, email_text):
         disposable_domains = get_disposable_domains()
         domain_name = email_text.split('@')[1]
-
+        print(f"Sorting {email_text} in servers list")
         if domain_name not in disposable_domains:
             for host in host_name:
                 mx_records = get_mx_records(email_text)
 
                 for item in mx_records:
+                    print(f"Sorting {email_text}")
                     if host.lower() in item:
                         print(f"{email_text} is a {host}")
                         try:
@@ -173,7 +184,7 @@ def sort_other_emails(email_text):
     else:
         print(f"{email_text} is wrongly formatted")
 
-
+@cache
 def check_godaddy(email_text):
     regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if re.search(regex, email_text):
@@ -197,11 +208,12 @@ def check_godaddy(email_text):
 
         if domain_name not in disposable_domains:
             for host in godaddy_hosts:
+                print(f"Sorting {email_text} in Godaddy server")
                 mx_records = get_mx_records(email_text)
                 for item in mx_records:
 
                     if host in item:
-                        print(f"{email_text} is a {host}")
+                        print(f"{email_text} is GODADDY")
                         try:
                             with open(f'Godaddy-{number}.txt', "a") as file:
                                 file.write(f'{email_text}\n')
@@ -210,32 +222,181 @@ def check_godaddy(email_text):
                                 file.write(f'{email_text}\n')
                         break
                     else:
+                        print(f"{email_text} is not {host}")
+                        with open(f'others-{number}.txt', "w") as file:
+                            file.write(f'{email_text}\n')
+
+@cache
+def check_zimbras(email_text):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    if re.search(regex, email_text):
+        disposable_domains = get_disposable_domains()
+        domain_name = email_text.split('@')[1]
+        zimbras_hosts = [f'mail.{domain_name}', f'webmail.{domain_name}', f'zimbra.{domain_name}',
+                         f'imap.{domain_name}', f'smtp.{domain_name}', f'pop.{domain_name}',
+                         f'autodiscover.{domain_name}', f'calendar.{domain_name}',
+                         f'contacts.{domain_name}', f'chat.{domain_name}', f'conference.{domain_name}',
+                         f'meetings.{domain_name}', f'messenger.{domain_name}', f'webchat.{domain_name}',
+                         f'mail2.{domain_name}', f'owa.{domain_name}', f'activesync.{domain_name}', f'admin.{domain_name}',
+                         f'config.{domain_name}', f'sync.{domain_name}', f'collaboration.{domain_name}', f'files.{domain_name}',
+                         f'docs.{domain_name}', f'drive.{domain_name}', f'groups.{domain_name}', f'lists.{domain_name}',
+                         f'notes.{domain_name}', f'tasks.{domain_name}', f'wiki.{domain_name}', f'portal.{domain_name}',
+                         f'support.{domain_name}', f'help.{domain_name}', f'kb.{domain_name}', f'service.{domain_name}',
+                         f'status.{domain_name}', f'updates.{domain_name}', f'reports.{domain_name}', f'stats.{domain_name}',
+                         f'billing.{domain_name}']
+
+        if domain_name not in disposable_domains:
+            for host in zimbras_hosts:
+                print(f"Sorting {email_text} in Zimbras server")
+                mx_records = get_mx_records(email_text)
+                for item in mx_records:
+
+                    if host in item:
+                        print(f"{email_text} is a {host}")
+                        try:
+                            with open(f'Zimbras-{number}.txt', "a") as file:
+                                file.write(f'{email_text}\n')
+                        except FileNotFoundError:
+                            with open(f'Zimbras-{number}.txt', "w") as file:
+                                file.write(f'{email_text}\n')
+                        break
+                    else:
+                        print(f"{email_text} is not {host}")
                         with open(f'others-{number}.txt', "w") as file:
                             file.write(f'{email_text}\n')
 
 
 if __name__ == '__main__':
+    current_machine_id = str(subprocess.check_output('wmic csproduct get uuid'),
+                             'utf-8').split('\n')[1].strip()
 
-    choice = input("Type 1 to check an email, 2 to check file: ")
-    if choice == "1":
-        email_c = input("Type the email address: ")
-        user_input = input("Type 1 for ROUNDCUBE, 2 for OWA, 3 for GODADDY, 4 for others: ")
+    if current_machine_id == "B222BE53-3CB1-11E8-8536-47D65C0000DA" or \
+            current_machine_id == '279D2D42-904E-ABF8-1CCE-DAC290EB3CC3':
 
-        if user_input == "1":
-            check_roundcube(email_c)
-            print("\nTASK COMPLETE")
+        choice = input("Type 1 to check an email, 2 to check file: ")
+        if choice == "1":
+            email_c = input("Type the email address: ")
+            user_input = input("Type 1 for ROUNDCUBE, 2 for OWA, 3 for GODADDY, 4 for zimbras, 5 for others: ")
 
-        elif user_input == "2":
-            check_OWA(email_c)
-            print("\nTASK COMPLETE")
+            if user_input == "1":
+                check_roundcube(email_c)
+                print("\nTASK COMPLETE")
 
-        elif user_input == "3":
-            check_godaddy(email_c)
-            print("\nTASK COMPLETE")
+            elif user_input == "2":
+                check_OWA(email_c)
+                print("\nTASK COMPLETE")
 
-        elif user_input == "4":
-            sort_other_emails(email_c)
-            print("\nTASK COMPLETE")
+            elif user_input == "3":
+                check_godaddy(email_c)
+                print("\nTASK COMPLETE")
+
+            elif user_input == "4":
+                check_zimbras(email_c)
+                print("\nTASK COMPLETE")
+
+            elif user_input == "5":
+                sort_other_emails(email_c)
+                print("\nTASK COMPLETE")
+
+            else:
+                ascii_image = '''       
+                             ------INVALID INPUT------
+                                   RUN APP AGAIN
+                              '''
+                print(ascii_image)
+                time.sleep(1000)
+
+        elif choice == '2':
+            user_email = input("Please type the file name (e.g. email.txt): ").lower()
+            user_input = input("Type 1 for ROUNDCUBE, 2 for OWA, 3 for GODADDY, 4 for others: ")
+            if user_input == '1':
+                try:
+                    with open(f'{user_email}') as file:
+                        f = file.readlines()
+                    data = list(dict.fromkeys(f))
+
+                    data = [x.strip('\n') for x in data if x.strip()]
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        executor.map(check_roundcube, data)
+
+                    print("\nTASK COMPLETE")
+                    time.sleep(1000)
+                except Exception as a:
+                    print(a)
+                    time.sleep(1000)
+
+            elif user_input == '2':
+                try:
+                    with open(f'{user_email}') as file:
+                        f = file.readlines()
+                    data = list(dict.fromkeys(f))
+
+                    data = [x.strip('\n') for x in data if x.strip()]
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        executor.map(check_OWA, data)
+
+                    print("\nTASK COMPLETE")
+                    time.sleep(1000)
+                except Exception as a:
+                    print(a)
+                    time.sleep(1000)
+
+            elif user_input == '3':
+                try:
+                    with open(f'{user_email}') as file:
+                        f = file.readlines()
+                    data = list(dict.fromkeys(f))
+
+                    data = [x.strip('\n') for x in data if x.strip()]
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        executor.map(check_godaddy, data)
+
+                    print("\nTASK COMPLETE")
+                    time.sleep(1000)
+
+                except Exception as a:
+                    print(a)
+                    time.sleep(1000)
+
+            elif user_input == '4':
+                try:
+                    with open(f'{user_email}') as file:
+                        f = file.readlines()
+                    data = list(dict.fromkeys(f))
+
+                    data = [x.strip('\n') for x in data if x.strip()]
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        executor.map(check_zimbras, data)
+
+                    print("\nTASK COMPLETE")
+                    time.sleep(1000)
+                except Exception as a:
+                    print(a)
+                    time.sleep(1000)
+
+            elif user_input == '5':
+                try:
+                    with open(f'{user_email}') as file:
+                        f = file.readlines()
+                    data = list(dict.fromkeys(f))
+
+                    data = [x.strip('\n') for x in data if x.strip()]
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                        executor.map(sort_other_emails, data)
+
+                    print("\nTASK COMPLETE")
+                    time.sleep(1000)
+                except Exception as a:
+                    print(a)
+                    time.sleep(1000)
+
+            else:
+                ascii_image = '''       
+                         ------INVALID INPUT------
+                               RUN APP AGAIN
+                              '''
+                print(ascii_image)
+                time.sleep(1000)
 
         else:
             ascii_image = '''       
@@ -244,87 +405,10 @@ if __name__ == '__main__':
                           '''
             print(ascii_image)
             time.sleep(1000)
-
-    elif choice == '2':
-        user_email = input("Please type the file name (e.g. email.txt): ").lower()
-        user_input = input("Type 1 for ROUNDCUBE, 2 for OWA, 3 for GODADDY, 4 for others: ")
-        if user_input == '1':
-            try:
-                with open(f'{user_email}') as file:
-                    f = file.readlines()
-                data = list(dict.fromkeys(f))
-
-                data = [x.strip('\n') for x in data if x.strip()]
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.map(check_roundcube, data)
-
-                print("\nTASK COMPLETE")
-                time.sleep(1000)
-            except Exception as a:
-                print(a)
-                time.sleep(1000)
-
-        elif user_input == '2':
-            try:
-                with open(f'{user_email}') as file:
-                    f = file.readlines()
-                data = list(dict.fromkeys(f))
-
-                data = [x.strip('\n') for x in data if x.strip()]
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.map(check_OWA, data)
-
-                print("\nTASK COMPLETE")
-                time.sleep(1000)
-            except Exception as a:
-                print(a)
-                time.sleep(1000)
-
-        elif user_input == '3':
-            try:
-                with open(f'{user_email}') as file:
-                    f = file.readlines()
-                data = list(dict.fromkeys(f))
-
-                data = [x.strip('\n') for x in data if x.strip()]
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.map(check_godaddy, data)
-
-                print("\nTASK COMPLETE")
-                time.sleep(1000)
-            except Exception as a:
-                print(a)
-                time.sleep(1000)
-
-        elif user_input == '4':
-            try:
-                with open(f'{user_email}') as file:
-                    f = file.readlines()
-                data = list(dict.fromkeys(f))
-
-                data = [x.strip('\n') for x in data if x.strip()]
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.map(sort_other_emails, data)
-
-                print("\nTASK COMPLETE")
-                time.sleep(1000)
-            except Exception as a:
-                print(a)
-                time.sleep(1000)
-
-        else:
-            advert = '''       
-                     ------INVALID INPUT------
-                           RUN APP AGAIN
-                          '''
-            print(advert)
-            time.sleep(1000)
-
     else:
-        advert = '''       
-                     ------INVALID INPUT------
-                           RUN APP AGAIN
-                      '''
-        print(advert)
+        ascii_image = '''       
+                         ------UNAUTHORIZED USER------
+                              Contact @MailionDev
+                          '''
+        print(ascii_image)
         time.sleep(1000)
-
